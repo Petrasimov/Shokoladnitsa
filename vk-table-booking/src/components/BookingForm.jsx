@@ -38,6 +38,13 @@ function BookingForm() {
                 <Select 
                     value={form.guests}
                     onChange={handleChange('guests')}
+                    options={[
+                        {label: '1', value: '1'},
+                        {label: '2', value: '2'},
+                        {label: '3', value: '3'},
+                        {label: '4', value: '4'},
+                        {label: '5+', value: '5+'}
+                    ]}
                 />
             </FormItem>
 
@@ -50,15 +57,21 @@ function BookingForm() {
             </FormItem>
 
             <FormItem top="Дата">
-                <Input type="date" />
+                <Input type="date" value={form.date} onChange={handleChange('date')}/>
             </FormItem>
 
             <FormItem top="Время">
-                <Input type="time" />
+                <Input type="time" value={form.time} onChange={handleChange('time')}/>
+            </FormItem>
+
+            <FormItem top="Комментарий">
+                <Textarea value={form.comment} onChange={handleChange('comment')}/>
             </FormItem>
 
             <FormItem top="Имя">
-                <Button size='1' stretched onClick={handleSubmit}/>
+                <Button size='1' stretched onClick={handleSubmit}>
+                    Забронировать
+                </Button>
             </FormItem>
             
         </Group>

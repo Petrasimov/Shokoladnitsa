@@ -1,5 +1,5 @@
 import { AppRoot, View, Panel } from '@vkontakte/vkui'
-import Home from './pages/Homee'
+import Home from './pages/Home'
 
 function App() {
 
