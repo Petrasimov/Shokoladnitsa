@@ -24,10 +24,27 @@ function BookingForm() {
         setForm({...form, [field]: e.target.value})
     }
 
-    const handleSubmit = () => {
-        console.log('Бронирование:', form)
-        alert('Демо: данные выведены в консоль')
+    const handleSubmit = async () => {
+        try {
+            const response = await fetch('http://127.0.0.1:8001/api/reservation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(form)
+            })
+
+            const data = await response.json()
+
+            alert('Бронь успешно отправлена')
+            console.log(data)
+
+        } catch (error) {
+            console.error('Ошибка отправки', error)
+            alert('Ошибка при отправке брони')
+        }
     }
+
     return (
         <Group>
             <FormItem top="Имя">
