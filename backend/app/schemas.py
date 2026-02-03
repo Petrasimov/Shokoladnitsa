@@ -3,7 +3,7 @@ from datetime import date, time
 
 class ReservationCreate(BaseModel):
     name: str
-    guests: str
+    guests: int
     phone: str
     email: str | None = None
     date: date

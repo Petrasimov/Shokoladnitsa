@@ -19,4 +19,4 @@ class Reservation(Base):
     
     created_at = Column(DateTime, default=datetime.utcnow)
     appeared = Column(Boolean, nullable=True)
-    check_amout = Column(Integer, nullable=True)
+    check = Column(Integer, nullable=True)

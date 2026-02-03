@@ -1,22 +1,18 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, BackgroundTasks
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
+from datetime import datetime
+import time
+
 from app.schemas import ReservationCreate
 from app.database import SessionLocal, engine, Base
 from app.models import Reservation
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi import Depends, BackgroundTasks
-from sqlalchemy.orm import Session
-from telegram_bot import send_message, reservation_buttons
-import time
-from datetime import datetime
+from app.telegram_bot import send_message, reservation_buttons
 
+# ===============================
+# Инициализация БД
+# ===============================
 Base.metadata.create_all(bind=engine)
-
-try:
-    with engine.connect() as conn:
-        print("✅ Подключение к БД успешно")
-        print("✅ Таблица 'reservations' создана/существует")
-except Exception as e:
-    print(f"❌ Ошибка: {e}")
 
 app = FastAPI()
 
@@ -28,30 +24,78 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ===============================
+# Dependency БД
+# ===============================
 def get_db():
     db = SessionLocal()
-    
     try:
         yield db
     finally:
         db.close()
 
+# ===============================
+# ФОНОВАЯ ЗАДАЧА
+# ===============================
+def send_visit_notification(reservation_id: int, visit_datetime: datetime):
+    delay = (visit_datetime - datetime.now()).total_seconds()
+
+    if delay <= 0:
+        return
+
+    time.sleep(delay)
+
+    db = SessionLocal()
+    try:
+        reservation = db.query(Reservation).get(reservation_id)
+        if not reservation:
+            return
+
+        send_message(
+            text=(
+                f"⏰ Гость по записи\n\n"
+                f"Имя: {reservation.name}\n"
+                f"Гостей: {reservation.guests}\n"
+                f"Телефон: {reservation.phone}\n"
+                f"Время: {reservation.time}\n"
+            ),
+            reply_markup=reservation_buttons(reservation.id)
+        )
+    finally:
+        db.close()
+
+# ===============================
+# ЭНДПОИНТ СОЗДАНИЯ БРОНИ
+# ===============================
 @app.post("/api/reservation")
-def create_reservation(
-    reservation: ReservationCreate, 
+async def create_reservation(
+    reservation: ReservationCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    background_tasks: BackgroundTasks
-    ):
-    
+):
     new_reservation = Reservation(**reservation.dict())
-    
+
     db.add(new_reservation)
-    
     db.commit()
-    
+    db.refresh(new_reservation)
+
+    # 1️⃣ Сразу отправляем сообщение
+    await send_message(
+        f"""
+    📌 Новая бронь
+    Имя: {reservation.name}
+    Гостей: {reservation.guests}
+    Телефон: {reservation.phone}
+    Дата: {reservation.date}
+    Время: {reservation.time}
+    Комментарий: {reservation.comment}
+    """
+    )
+
+    # 2️⃣ Планируем отложенное сообщение
     visit_datetime = datetime.combine(
-        reservation.date,
-        reservation.time
+        new_reservation.date,
+        new_reservation.time
     )
 
     background_tasks.add_task(
@@ -59,31 +103,5 @@ def create_reservation(
         new_reservation.id,
         visit_datetime
     )
-    
-    db.refresh(new_reservation)
-    
-    send_message(
-        f"""
-        📌 Новая бронь
-        Имя: {reservation.name}
-        Гостей: {reservation.guests}
-        Телефон: {reservation.phone}
-        Дата: {reservation.date}
-        Время: {reservation.time}
-        Комментарий: {reservation.comment}
-        """
-    )
-    
-    def send_visit_notification(reservation_id: int, visit_datetime: datetime):
-        delay =(visit_datetime - datetime.now).total_second()
-        
-        if delay > 0 :
-            time.sleep(delay)
-        
-        send_message(
-            "⏰ Гость должен придти",
-            reply_markup=reservation_buttons(reservation_id))
-    
-    
-    
+
     return new_reservation
