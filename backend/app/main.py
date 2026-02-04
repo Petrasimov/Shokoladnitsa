@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from datetime import datetime
 import time
+import asyncio
 
 from app.schemas import ReservationCreate
 from app.database import SessionLocal, engine, Base
@@ -37,13 +38,13 @@ def get_db():
 # ===============================
 # ФОНОВАЯ ЗАДАЧА
 # ===============================
-def send_visit_notification(reservation_id: int, visit_datetime: datetime):
+async def send_visit_notification(reservation_id: int, visit_datetime: datetime):
     delay = (visit_datetime - datetime.now()).total_seconds()
 
     if delay <= 0:
         return
 
-    time.sleep(delay)
+    await asyncio.sleep(delay)
 
     db = SessionLocal()
     try:
@@ -51,13 +52,13 @@ def send_visit_notification(reservation_id: int, visit_datetime: datetime):
         if not reservation:
             return
 
-        send_message(
-            text=(
-                f"⏰ Гость по записи\n\n"
-                f"Имя: {reservation.name}\n"
-                f"Гостей: {reservation.guests}\n"
-                f"Телефон: {reservation.phone}\n"
-                f"Время: {reservation.time}\n"
+        await send_message(
+            text = (
+                f"⏰ *Гость по записи*\n\n"
+                f"👤 Имя: {reservation.name}\n"
+                f"👥 Гостей: {reservation.guests}\n"
+                f"📞 Телефон: {reservation.phone}\n"
+                f"🕒 Время: {reservation.time}\n"
             ),
             reply_markup=reservation_buttons(reservation.id)
         )
@@ -81,16 +82,17 @@ async def create_reservation(
 
     # 1️⃣ Сразу отправляем сообщение
     await send_message(
-        f"""
-    📌 Новая бронь
-    Имя: {reservation.name}
-    Гостей: {reservation.guests}
-    Телефон: {reservation.phone}
-    Дата: {reservation.date}
-    Время: {reservation.time}
-    Комментарий: {reservation.comment}
-    """
+        (
+            f"📌 *Новая бронь*\n\n"
+            f"👤 Имя: {reservation.name}\n"
+            f"👥 Гостей: {reservation.guests}\n"
+            f"📞 Телефон: {reservation.phone}\n"
+            f"📅 Дата: {reservation.date}\n"
+            f"🕒 Время: {reservation.time}\n"
+            f"💬 Комментарий: {reservation.comment or '—'}"
+        )
     )
+
 
     # 2️⃣ Планируем отложенное сообщение
     visit_datetime = datetime.combine(
