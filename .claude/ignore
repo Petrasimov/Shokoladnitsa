@@ -1,0 +1,62 @@
+# Claude Code Ignore File
+# Файлы и папки, которые Claude должен игнорировать
+
+# Dependencies
+node_modules/
+venv/
+__pycache__/
+
+# Build outputs
+dist/
+build/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Package manager locks (большие файлы)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Coverage
+coverage/
+.coverage
+htmlcov/
+
+# Testing
+.pytest_cache/
+.tox/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

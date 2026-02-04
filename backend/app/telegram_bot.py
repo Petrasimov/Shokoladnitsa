@@ -26,7 +26,8 @@ async def send_message(text, reply_markup=None):
     await bot.send_message(
         chat_id=CHAT_ID,
         text=text,
-        reply_markup=reply_markup
+        reply_markup=reply_markup,
+        parse_mode="Markdown"
     )
 
 def reservation_buttons(reservation_id: int):
@@ -46,7 +47,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     db = SessionLocal()
     try:
-        reservation = db.query(Reservation).get(reservation_id)
+        reservation = db.get(Reservation, reservation_id)
 
         if not reservation:
             await query.message.reply_text("❌ Бронь не найдена")
@@ -58,13 +59,15 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             db.commit()
 
             await query.message.reply_text(
-                f"❌ Гость не пришёл\nБронь ID: {reservation_id}"
+                f"❌ *Гость не пришёл*\n\n🆔 Бронь №{reservation_id}",
+                parse_mode="Markdown"
             )
 
         elif action == "came":
             context.user_data["wait_check"] = reservation_id
             await query.message.reply_text(
-                "✅ Гость пришёл.\nВведите сумму чека:"
+                "✅ *Гость пришёл*\n\n💰 Введите сумму чека (₽):",
+                parse_mode="Markdown"
             )
 
     finally:
@@ -79,7 +82,11 @@ async def check_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         check_amount = int(update.message.text)
     except ValueError:
-        await update.message.reply_text("Введите число")
+        await update.message.reply_text(
+            "⚠️ Пожалуйста, введите *число* — сумму чека в рублях",
+            parse_mode="Markdown"
+        )
+        context.user_data["wait_check"] = reservation_id  # Возвращаем состояние ожидания
         return
 
     db = SessionLocal()
@@ -94,9 +101,16 @@ async def check_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reservation.check = check_amount
         db.commit()
 
-        await update.message.reply_text(
-            f"💰 Чек сохранён: {check_amount}₽\nБронь ID: {reservation_id}"
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=(
+                f"💾 *Чек сохранён*\n\n"
+                f"💰 Сумма: {check_amount} ₽\n"
+                f"🆔 Бронь №{reservation_id}"
+            ),
+            parse_mode="Markdown"
         )
+
 
     finally:
         db.close()
