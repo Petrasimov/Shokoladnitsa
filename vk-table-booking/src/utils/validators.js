@@ -6,12 +6,16 @@ export function validateName(name) {
     return null;
 }
 
-export function validateGuests(guests){
-    if(!guests) return "Укажите количество гостей";
-    if(Number.isInteger(+guests)) return "Введите число";
-    if (+guests < 1 || +guests > 20) return "От 1 до 20 гостей";
+export function validateGuests(guests) {
+    const num = Number(guests);
+
+    if (!num) return "Укажите количество гостей";
+    if (!Number.isInteger(num)) return "Введите целое число";
+    if (num < 1 || num > 20) return "От 1 до 20 гостей";
+
     return null;
 }
+
 
 export function validatePhone(phone) {
     if(!phone) return "Введите телефон";
@@ -30,15 +34,7 @@ export function validateDate(date) {
     if(selected < today) return "Дата не может быть в прошлом";
     return null;
 }
-
 export function validateTime(time) {
-    if(!time) return "Выберите время";
-    if(date) {
-        const selectedDateTime = new Date(`${date}T${time}`);
-        const now = new Date();
-        if (selectedDateTime < now)
-            return "Время не может быть в прошлом";
-    }
-    
+    if (!time) return "Выберите время";
     return null;
 }

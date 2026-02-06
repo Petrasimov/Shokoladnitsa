@@ -1,12 +1,13 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
     FormItem,
     Input,
     Button,
     Textarea,
     Select,
-    Group
+    Group,
+    SimpleCell 
 } from '@vkontakte/vkui'
 import {
     validateName,
@@ -25,7 +26,20 @@ function BookingForm() {
         date: '',
         time: '',
         comment: ''
-    })
+    });
+
+    const [errors, setErrors] = useState({});
+
+    const commentPlaceholder = useMemo(() => {
+        const variants = [
+            "У окна",
+            "В уголочке",
+            "На диване",
+            "Не возле входа",
+            "У розетки",
+        ];
+        return variants[Math.floor(Math.random() * variants.length)];
+    }, []);
 
     const validateForm = () => {
         const newErrors = {
@@ -41,16 +55,28 @@ function BookingForm() {
         )
 
         setErrors(newErrors)
-        return Object.keys(newErrors).lenght === 0
-    }
+        return Object.keys(newErrors).length === 0
+    };
 
-    const [errors, setErrors] = useState({
+    const setToday = () => {
+        const today = new Date().toISOString().split('T')[0];
+        setForm({...form, date: today});
+    };
 
-    })
+    const setTomorrow = () => {
+        const d = new Date();
+        d.setDate(d.getDate() + 1);
+        const tomorrow = d.toISOString().split('T')[0];
+        setForm({...form, date: tomorrow});
+    };
 
     const handleChange = (field) => (e) => {
-        setForm({...form, [field]: e.target.value})
-    }
+        setForm({...form, [field]: e.target.value});
+
+        if(errors[field]) {
+            setErrors({...errors, [field]: null});
+        }
+    };
 
     const handleSubmit = async () => {
         if(!validateForm()) return;
@@ -73,7 +99,7 @@ function BookingForm() {
             console.error('Ошибка отправки', error)
             alert('Ошибка при отправке брони')
         }
-    }
+    };
 
     return (
         <Group>
@@ -81,7 +107,7 @@ function BookingForm() {
              top="Имя"
              status={errors.name ? 'error' : 'default'}
              bottom={errors.name}
-             >
+             >  
                 <Input value={form.name} onChange={handleChange('name')}/>
             </FormItem>
 
@@ -128,8 +154,12 @@ function BookingForm() {
              status={errors.date ? 'error' : 'default'}
              bottom={errors.date}>
                 <Input type="date" value={form.date} onChange={handleChange('date')}/>
+                <Group mode='horizontal'>
+                    <Button size='s' onClick={setToday}>Сегодня</Button>
+                    <Button size='s' onClick={setTomorrow}>Завтра</Button>
+                </Group>
             </FormItem>
-
+            
             <FormItem
              top="Время"
              status={errors.time ? 'error' : 'default'}
@@ -138,10 +168,13 @@ function BookingForm() {
             </FormItem>
 
             <FormItem top="Комментарий">
-                <Textarea value={form.comment} onChange={handleChange('comment')}/>
+                <Textarea 
+                value={form.comment} 
+                onChange={handleChange('comment')}
+                placeholder={commentPlaceholder}/>
             </FormItem>
 
-            <FormItem top="Забронировать">
+            <FormItem>
                 <Button size='1' stretched onClick={handleSubmit}>
                     Забронировать
                 </Button>
