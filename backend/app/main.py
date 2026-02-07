@@ -48,7 +48,7 @@ async def send_visit_notification(reservation_id: int, visit_datetime: datetime)
 
     db = SessionLocal()
     try:
-        reservation = db.query(Reservation).get(reservation_id)
+        reservation = db.get(Reservation, reservation_id)
         if not reservation:
             return
 

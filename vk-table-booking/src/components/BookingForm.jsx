@@ -22,7 +22,6 @@ function BookingForm() {
         name: '',
         guests: 1,
         phone: '',
-        email: '',
         date: '',
         time: '',
         comment: ''
@@ -142,11 +141,6 @@ function BookingForm() {
              bottom={errors.phone}
              >
                 <Input value={form.phone} onChange={handleChange('phone')}/>
-            </FormItem>
-
-            <FormItem
-             top="Email">
-                <Input value={form.email} onChange={handleChange('email')}/>
             </FormItem>
 
             <FormItem
