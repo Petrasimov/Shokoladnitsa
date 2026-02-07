@@ -10,7 +10,6 @@ class Reservation(Base):
     guests = Column(Integer, nullable=False)
     
     phone = Column(String, nullable=False)
-    email = Column(String, nullable=True)
     
     date = Column(Date, nullable=False)
     time = Column(Time, nullable=False)

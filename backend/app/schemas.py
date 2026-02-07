@@ -5,7 +5,6 @@ class ReservationCreate(BaseModel):
     name: str
     guests: int
     phone: str
-    email: str | None = None
     date: date
     time: time
     comment: str | None = None
