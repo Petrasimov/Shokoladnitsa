@@ -11,8 +11,13 @@ export default defineConfig({
   server: {
     host: 'localhost',
     port: 5173,
-    https: true, // VK требует HTTPS
+    https: true,
     strictPort: true,
+    hmr: {
+      protocol: 'wss',
+      host: 'localhost',
+      port: 5173,
+    },
   },
   base: '/', // Базовый путь для VK Mini App
 })

@@ -20,7 +20,7 @@ export function validateGuests(guests) {
 export function validatePhone(phone) {
     if(!phone) return "Введите телефон";
     const cleaned = phone.replace(/\D/g, "");
-    if (cleaned.length < 10) return "Неверный номер телефона";
+    if (cleaned.length < 11) return "Введите полный номер телефона";
     return null;
 }
 
