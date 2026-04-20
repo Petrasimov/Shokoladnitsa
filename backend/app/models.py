@@ -35,6 +35,7 @@ class Reservation(Base):
 
     created_at = Column(DateTime, default=datetime.utcnow)  # Время создания записи
     appeared = Column(Boolean, nullable=True)                # Пришёл ли гость (None = не отмечено)
+    visit_confirmed_by = Column(Integer, nullable=True)
     check = Column(Integer, nullable=True)                   # Сумма чека в рублях
 
 

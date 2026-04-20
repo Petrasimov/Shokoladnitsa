@@ -334,8 +334,28 @@ async def handle_chart(user_id: int, chart_func, caption: str):
 # ===============================
 # Обработка подтверждения прихода
 # ===============================
-async def handle_guest_came(reservation_id: int):
-    """Отмечает прибытие гостя и запрашивает сумму чека в чате официантов."""
+async def handle_guest_came(reservation_id: int, confirmed_by: int):
+    """Отмечает прибытие гостя. Блокирует повторное подтверждение."""
+    db = SessionLocal()
+    try:
+        reservation = db.get(Reservation, reservation_id)
+        if not reservation:
+            await send_chat_message(f"Бронь #{reservation_id} не найдена")
+            return
+        if reservation.appeared is not None:
+            who = f"@id{reservation.visit_confirmed_by}" if reservation.visit_confirmed_by else "неизвестно"
+            status = "Пришёл ✅" if reservation.appeared else "Не пришёл ❌"
+            await send_chat_message(
+                f"⚠️ На бронь #{reservation_id} уже внесены данные: {status}\n"
+                f"Изменения внёс {who}"
+            )
+            return
+        reservation.appeared = True
+        reservation.visit_confirmed_by = confirmed_by
+        db.commit()
+    finally:
+        db.close()
+
     logger.info("Reservation #%d: guest came, requesting check amount", reservation_id)
     msg_id = await send_chat_message(
         f"✅ Гость пришёл\n\n"
@@ -344,24 +364,33 @@ async def handle_guest_came(reservation_id: int):
     )
     if msg_id:
         pending_checks[msg_id] = reservation_id
-        logger.info("Waiting for check reply to msg_id=%d (reservation #%d)", msg_id, reservation_id)
 
 
-async def handle_guest_no_show(reservation_id: int):
-    """Отмечает неявку гостя и сообщает в чат официантов."""
-    logger.info("Reservation #%d: no-show", reservation_id)
+
+async def handle_guest_no_show(reservation_id: int, confirmed_by: int):
+    """Отмечает неявку гостя. Блокирует повторное подтверждение."""
     db = SessionLocal()
     try:
         reservation = db.get(Reservation, reservation_id)
-        if reservation:
-            reservation.appeared = False
-            reservation.check = 0
-            db.commit()
-            await send_chat_message(f"❌ Гость не пришёл (бронь #{reservation_id})")
-        else:
+        if not reservation:
             await send_chat_message(f"Бронь #{reservation_id} не найдена")
+            return
+        if reservation.appeared is not None:
+            who = f"@id{reservation.visit_confirmed_by}" if reservation.visit_confirmed_by else "неизвестно"
+            status = "Пришёл ✅" if reservation.appeared else "Не пришёл ❌"
+            await send_chat_message(
+                f"⚠️ На бронь #{reservation_id} уже внесены данные: {status}\n"
+                f"Изменения внёс {who}"
+            )
+            return
+        reservation.appeared = False
+        reservation.check = 0
+        reservation.visit_confirmed_by = confirmed_by
+        db.commit()
+        await send_chat_message(f"❌ Гость не пришёл (бронь #{reservation_id})")
     finally:
         db.close()
+
 
 
 async def handle_check_amount(reservation_id: int, check_str: str):
@@ -508,10 +537,10 @@ async def handle_message(event: dict):
             rid = payload.get("reservation_id")
 
             if action == "came":
-                await handle_guest_came(rid)
+                await handle_guest_came(rid, user_id)
                 return
             elif action == "no_show":
-                await handle_guest_no_show(rid)
+                await handle_guest_no_show(rid, user_id)
                 return
         except Exception as e:
             logger.error("Payload parse error: %s", e)
@@ -553,7 +582,7 @@ async def handle_message(event: dict):
         return
 
     # 4. Только для администратора — команды в ЛС
-    if str(user_id) != VK_ADMIN_ID:
+    if str(user_id) != VK_ADMIN_ID or peer_id != user_id:
         return
 
     if text.lower() in ("начать", "/start", "start"):
