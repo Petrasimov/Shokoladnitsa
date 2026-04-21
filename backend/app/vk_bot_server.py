@@ -569,18 +569,6 @@ async def handle_message(event: dict):
             await handle_check_amount(reservation_id, text)
             return
 
-    # 3. Гость написал в ЛС сообщества (ответ на обратную связь или любое другое)
-    #    peer_id == user_id означает личный диалог (не чат официантов)
-    if str(user_id) != VK_ADMIN_ID and peer_id == user_id:
-        logger.info("Guest %d sent feedback reply: %r", user_id, text)
-        await send_message(user_id, (
-            "☕ Спасибо за ваш отзыв!\n\n"
-            "🍰 Ваше мнение очень важно для нас — "
-            "мы становимся лучше благодаря вам.\n\n"
-            "✨ Будем рады снова видеть вас в Шоколаднице!"
-        ))
-        return
-
     # 4. Только для администратора — команды в ЛС
     if str(user_id) != VK_ADMIN_ID or peer_id != user_id:
         return
