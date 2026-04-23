@@ -452,21 +452,14 @@ function BookingForm({ onRequestConfirm, isSubmitting }) {
                                 });
                                 setAgreements({ ...agreements, notifications: true });
                             } catch (err) {
-                                console.log('VKWebAppAllowMessagesFromGroup error:', JSON.stringify(err));
-                                const code = err?.error_data?.error_code;
-                                if (code === 4) {
-                                    setAgreements({ ...agreements, notifications: false });
-                                } else {
-                                    // Already allowed or other non-decline error — treat as success
-                                    setAgreements({ ...agreements, notifications: true });
-                                }
+                                setAgreements({ ...agreements, notifications: false });
                             }
                         } else {
                             setAgreements({ ...agreements, notifications: false });
                         }
                     }}
                 >
-                    🔔 Получать уведомления о бронировании
+                    🔔 Получать уведомления о бронировании (скоро)
                 </Checkbox>
             </FormItem>
 
