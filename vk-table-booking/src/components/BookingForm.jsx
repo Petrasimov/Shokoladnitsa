@@ -451,9 +451,15 @@ function BookingForm({ onRequestConfirm, isSubmitting }) {
                                     group_id: Number(import.meta.env.VITE_VK_GROUP_ID),
                                 });
                                 setAgreements({ ...agreements, notifications: true });
-                            } catch {
-                                // User declined — leave unchecked, booking still works
-                                setAgreements({ ...agreements, notifications: false });
+                            } catch (err) {
+                                // error_code 4 = user explicitly declined
+                                const code = err?.error_data?.error_code;
+                                if (code === 4) {
+                                    setAgreements({ ...agreements, notifications: false });
+                                } else {
+                                    // Already allowed or other non-decline error — treat as success
+                                    setAgreements({ ...agreements, notifications: true });
+                                }
                             }
                         } else {
                             setAgreements({ ...agreements, notifications: false });
