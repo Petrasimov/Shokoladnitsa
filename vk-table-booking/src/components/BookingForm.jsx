@@ -452,7 +452,7 @@ function BookingForm({ onRequestConfirm, isSubmitting }) {
                                 });
                                 setAgreements({ ...agreements, notifications: true });
                             } catch (err) {
-                                // error_code 4 = user explicitly declined
+                                console.log('VKWebAppAllowMessagesFromGroup error:', JSON.stringify(err));
                                 const code = err?.error_data?.error_code;
                                 if (code === 4) {
                                     setAgreements({ ...agreements, notifications: false });
