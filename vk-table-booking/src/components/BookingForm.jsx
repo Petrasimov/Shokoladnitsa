@@ -1,15 +1,3 @@
-/**
- * Форма бронирования столика.
- *
- * Поля: имя, гостей, телефон, дата, время, комментарий.
- * Чекбоксы: согласие с пользовательским соглашением, согласие на обработку ПД,
- *            разрешение уведомлений (VK Bridge, опционально).
- * Уведомления — опциональны, бронирование работает и без них.
- *
- * После валидации вызывает onRequestConfirm({ payload, displayData }) —
- * фактическая отправка запроса происходит в App.jsx.
- */
-
 import { useState, useMemo } from 'react';
 import bridge from '@vkontakte/vk-bridge';
 import {
@@ -21,9 +9,7 @@ import {
     Select,
     FormLayoutGroup,
     DateInput,
-    IconButton,
 } from '@vkontakte/vkui';
-import { Icon24Dismiss } from '@vkontakte/icons';
 import {
     validateName,
     validateGuests,
@@ -31,7 +17,6 @@ import {
     validateDate,
     validateTime,
 } from '../utils/validators';
-import { TERMS_OF_USE_TEXT, USER_AGREEMENT_TEXT, PERSONAL_DATA_CONSENT_TEXT, PRIVACY_POLICY_TEXT } from '../utils/legalTexts';
 
 // Генерация слотов времени: 08:00, 08:30, ..., 20:00
 const ALL_TIME_SLOTS = (() => {
@@ -89,15 +74,8 @@ const INITIAL_FORM = {
 };
 
 const INITIAL_AGREEMENTS = {
-    agreeToTerms: false,
-    agreeToPrivacy: false,
     notifications: false,
 };
-
-const MODAL_TERMS_OF_USE   = 'modal-terms-of-use';    // Условия использования
-const MODAL_PRIVACY_POLICY = 'modal-privacy-policy';  // Политика конфиденциальности
-const MODAL_PUBLIC_OFFER   = 'modal-public-offer';    // Публичная оферта
-const MODAL_CONSENT        = 'modal-consent';         // Согласие на обработку ПД
 
 function BookingForm({ onRequestConfirm, isSubmitting }) {
     const [form, setForm] = useState(INITIAL_FORM);
@@ -116,22 +94,16 @@ function BookingForm({ onRequestConfirm, isSubmitting }) {
     });
 
     const [agreements, setAgreements] = useState(INITIAL_AGREEMENTS);
-    const [consentErrors, setConsentErrors] = useState({});
-    const [activeModal, setActiveModal] = useState(null);
 
-    // Кнопка активна только когда заполнены все обязательные поля + два обязательных чекбокса
-    // Уведомления — опциональны: бронирование работает без них
     const canSubmit = useMemo(() => {
         const phoneDigits = form.phone.replace(/\D/g, '');
         return (
             form.name.trim().length > 0 &&
             phoneDigits.length >= 10 &&
             form.date.length > 0 &&
-            form.time.length > 0 &&
-            agreements.agreeToTerms &&
-            agreements.agreeToPrivacy
+            form.time.length > 0
         );
-    }, [form.name, form.phone, form.date, form.time, agreements.agreeToTerms, agreements.agreeToPrivacy]);
+    }, [form.name, form.phone, form.date, form.time]);
 
     // Фильтрация слотов времени: если дата — сегодня, убираем прошедшие
     const availableTimeSlots = useMemo(() => {
@@ -201,18 +173,6 @@ function BookingForm({ onRequestConfirm, isSubmitting }) {
      */
     const handleSubmit = () => {
         if (isSubmitting) return;
-
-        // Проверяем два обязательных чекбокса (уведомления — опциональны)
-        const newConsentErrors = {};
-        if (!agreements.agreeToTerms) {
-            newConsentErrors.agreeToTerms = 'Необходимо принять пользовательское соглашение';
-        }
-        if (!agreements.agreeToPrivacy) {
-            newConsentErrors.agreeToPrivacy = 'Необходимо дать согласие на обработку персональных данных';
-        }
-        setConsentErrors(newConsentErrors);
-
-        if (Object.keys(newConsentErrors).length > 0) return;
         if (!validateFormData()) return;
 
         const cleanPhone = form.phone.replace(/\D/g, '');
@@ -239,60 +199,8 @@ function BookingForm({ onRequestConfirm, isSubmitting }) {
         });
     };
 
-    const DOC_MODALS = {
-        [MODAL_TERMS_OF_USE]:   { title: 'Условия использования',        text: TERMS_OF_USE_TEXT },
-        [MODAL_PRIVACY_POLICY]: { title: 'Политика конфиденциальности',  text: PRIVACY_POLICY_TEXT },
-        [MODAL_PUBLIC_OFFER]:   { title: 'Публичная оферта',             text: USER_AGREEMENT_TEXT },
-        [MODAL_CONSENT]:        { title: 'Согласие на обработку данных', text: PERSONAL_DATA_CONSENT_TEXT },
-    };
-
-    const activeDoc = activeModal ? DOC_MODALS[activeModal] : null;
-
     return (
         <>
-            {activeDoc && (
-                <div style={{
-                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    backgroundColor: 'var(--vkui--color_background_modal_inverse)',
-                    zIndex: 100,
-                    display: 'flex',
-                    flexDirection: 'column',
-                }}>
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        padding: '12px 16px',
-                        borderBottom: '1px solid var(--vkui--color_separator_primary)',
-                        backgroundColor: 'var(--vkui--color_background_content)',
-                    }}>
-                        <span style={{ flex: 1, fontWeight: 600, fontSize: 16 }}>
-                            {activeDoc.title}
-                        </span>
-                        <IconButton onClick={() => setActiveModal(null)}>
-                            <Icon24Dismiss />
-                        </IconButton>
-                    </div>
-                    <div style={{
-                        flex: 1,
-                        overflowY: 'auto',
-                        padding: '16px',
-                        backgroundColor: 'var(--vkui--color_background_content)',
-                    }}>
-                        <pre style={{
-                            whiteSpace: 'pre-wrap',
-                            wordBreak: 'break-word',
-                            fontFamily: 'inherit',
-                            fontSize: 13,
-                            lineHeight: 1.6,
-                            color: 'var(--vkui--color_text_primary)',
-                            margin: 0,
-                        }}>
-                            {activeDoc.text}
-                        </pre>
-                    </div>
-                </div>
-            )}
-
             <FormLayoutGroup mode="horizontal">
                 <FormItem
                     top="👤 Имя"
@@ -387,60 +295,6 @@ function BookingForm({ onRequestConfirm, isSubmitting }) {
                 />
             </FormItem>
 
-            {/* Чекбокс 1: три документа в одной строке (как на скриншоте) */}
-            <FormItem
-                status={consentErrors.agreeToTerms ? 'error' : 'default'}
-                bottom={consentErrors.agreeToTerms}
-            >
-                <Checkbox
-                    checked={agreements.agreeToTerms}
-                    onChange={(e) => {
-                        setAgreements({ ...agreements, agreeToTerms: e.target.checked });
-                        if (e.target.checked && consentErrors.agreeToTerms) {
-                            setConsentErrors({ ...consentErrors, agreeToTerms: undefined });
-                        }
-                    }}
-                >
-                    {'Я принимаю '}
-                    <span style={{ textDecoration: 'underline', cursor: 'pointer' }}
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveModal(MODAL_TERMS_OF_USE); }}>
-                        условия использования
-                    </span>
-                    {', '}
-                    <span style={{ textDecoration: 'underline', cursor: 'pointer' }}
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveModal(MODAL_PRIVACY_POLICY); }}>
-                        политику конфиденциальности
-                    </span>
-                    {' и '}
-                    <span style={{ textDecoration: 'underline', cursor: 'pointer' }}
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveModal(MODAL_PUBLIC_OFFER); }}>
-                        публичную оферту
-                    </span>
-                </Checkbox>
-            </FormItem>
-
-            {/* Чекбокс 2: согласие на обработку ПД */}
-            <FormItem
-                status={consentErrors.agreeToPrivacy ? 'error' : 'default'}
-                bottom={consentErrors.agreeToPrivacy}
-            >
-                <Checkbox
-                    checked={agreements.agreeToPrivacy}
-                    onChange={(e) => {
-                        setAgreements({ ...agreements, agreeToPrivacy: e.target.checked });
-                        if (e.target.checked && consentErrors.agreeToPrivacy) {
-                            setConsentErrors({ ...consentErrors, agreeToPrivacy: undefined });
-                        }
-                    }}
-                >
-                    {'Я даю согласие на '}
-                    <span style={{ textDecoration: 'underline', cursor: 'pointer' }}
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveModal(MODAL_CONSENT); }}>
-                        обработку моих персональных данных
-                    </span>
-                </Checkbox>
-            </FormItem>
-
             <FormItem>
                 <Checkbox
                     checked={agreements.notifications}
@@ -473,6 +327,19 @@ function BookingForm({ onRequestConfirm, isSubmitting }) {
                 >
                     ☕ Забронировать
                 </Button>
+            </FormItem>
+
+            <FormItem>
+                <div style={{ fontSize: 12, color: 'var(--vkui--color_text_secondary)', textAlign: 'center', lineHeight: 1.6 }}>
+                    Нажимая «Забронировать», вы принимаете{' '}
+                    <a href="https://dev.vk.com/ru/user-agreement" target="_blank" rel="noreferrer" style={{ color: 'var(--vkui--color_text_link)' }}>
+                        пользовательское соглашение
+                    </a>
+                    {' '}и{' '}
+                    <a href="https://dev.vk.com/ru/privacy-policy" target="_blank" rel="noreferrer" style={{ color: 'var(--vkui--color_text_link)' }}>
+                        политику конфиденциальности
+                    </a>
+                </div>
             </FormItem>
         </>
     );
