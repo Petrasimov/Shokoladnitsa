@@ -1,299 +1,427 @@
-/**
- * Юридические документы мини-приложения «Шоколадница» (VK Mini App).
- * Версия 2.0 — собственные документы кафе, разработанные в соответствии с ФЗ-152
- * и требованиями платформы ВКонтакте (п. 1.1.4 правил VK Mini Apps).
- *
- * Документы специфичны для данного сервиса:
- *  - сбор номера телефона пользователя
- *  - передача данных официантам через VK API
- *  - уведомления через личные сообщения ВКонтакте
- */
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ
-// ─────────────────────────────────────────────────────────────────────────────
-export const PRIVACY_POLICY_TEXT = `ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ
-Мини-приложение «Шоколадница» (VK Mini App)
-Версия 2.0 | Дата: 5 мая 2026 г.
-Разработана согласно ФЗ от 27.07.2006 № 152-ФЗ «О персональных данных»
-
-────────────────────────────────────────────────────────────────────────
-
-1. ОПЕРАТОР ПЕРСОНАЛЬНЫХ ДАННЫХ
-
-Оператором является кафе «Шоколадница», ул. Спасская, 18.
-Контакт: vk.com/shokokirov
-
-────────────────────────────────────────────────────────────────────────
-
-2. КАКИЕ ДАННЫЕ МЫ СОБИРАЕМ
-
-При оформлении бронирования:
-
-Обязательные:
-  — Имя — для идентификации гостя при визите
-  — Номер мобильного телефона — для связи при изменении брони
-  — Дата и время визита — для резервирования места
-  — Количество гостей — для подготовки столика
-
-Необязательные:
-  — Комментарий к бронированию (до 500 символов)
-  — VK user ID — только при явном согласии на уведомления
-
-Технические данные:
-  — IP-адрес — хранится до 120 секунд для защиты от спама,
-    затем автоматически удаляется
-  — Журналы ошибок — без привязки к конкретному пользователю
-
-Мы НЕ собираем: паспортные данные, банковские реквизиты,
-биометрию, геолокацию, email, cookie.
-
-────────────────────────────────────────────────────────────────────────
-
-3. ЦЕЛИ ОБРАБОТКИ ДАННЫХ
-
-  — Оформление и учёт бронирования столика
-  — Уведомление персонала кафе о предстоящем визите
-  — Отправка подтверждения и напоминаний через VK (при согласии)
-  — Защита от злоупотреблений и спама
-  — Обезличенная статистика работы кафе
-
-Мы НЕ используем данные для: рекламы, профилирования,
-передачи третьим лицам в коммерческих целях.
-
-────────────────────────────────────────────────────────────────────────
-
-4. ПЕРЕДАЧА ДАННЫХ ТРЕТЬИМ ЛИЦАМ
-
-  а) Персонал кафе — имя, дата, время, кол-во гостей, телефон
-     (через защищённый чат ВКонтакте)
-
-  б) Платформа ВКонтакте — для доставки уведомлений (при согласии).
-     Обработка данных платформой регулируется политикой VK:
-     https://vk.com/privacy
-
-  в) Sentry — только технические данные об ошибках (опционально)
-
-Данные НЕ передаются рекламным агентствам и иным третьим лицам.
-
-────────────────────────────────────────────────────────────────────────
-
-5. СРОКИ ХРАНЕНИЯ
-
-  — Данные бронирований: до требования об удалении
-  — VK user ID: до отзыва согласия на уведомления
-  — IP-адреса: не более 120 секунд (автоудаление)
-  — Журналы ошибок: не более 90 дней
-
-────────────────────────────────────────────────────────────────────────
-
-6. ВАШИ ПРАВА (ФЗ-152)
-
-  — Получить информацию об обработке ваших данных
-  — Потребовать уточнения, блокирования или удаления данных
-  — Отозвать согласие в любой момент
-  — Обжаловать действия Оператора в Роскомнадзор (rkn.gov.ru)
-    или в суде
-
-Для обращений: vk.com/shokokirov | ул. Спасская, 18
-Срок рассмотрения: 30 рабочих дней.
-
-────────────────────────────────────────────────────────────────────────
-
-7. ЗАЩИТА ДАННЫХ
-
-  — Шифрование при передаче: HTTPS/TLS
-  — База данных с ограниченным доступом (только персонал кафе)
-  — Rate limiting — защита от автоматизированных атак
-  — Заголовки безопасности HTTP (CSP, X-Content-Type-Options)
-
-────────────────────────────────────────────────────────────────────────
-
-8. УВЕДОМЛЕНИЯ ЧЕРЕЗ ВКОНТАКТЕ
-
-Приложение отправляет сообщения в VK только при двух условиях:
-  1. Вы поставили галочку «Получать уведомления» в форме
-  2. Вы нажали «Разрешить» в диалоге ВКонтакте
-
-Виды уведомлений: подтверждение брони, напоминание за 1 час,
-запрос отзыва на следующий день.
-
-Отказ: заблокируйте сообщения сообщества в настройках VK.
-
-────────────────────────────────────────────────────────────────────────
-
-© Кафе «Шоколадница», 2026. ул. Спасская, 18 | vk.com/shokokirov`;
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ПОЛЬЗОВАТЕЛЬСКОЕ СОГЛАШЕНИЕ (ПУБЛИЧНАЯ ОФЕРТА)
-// ─────────────────────────────────────────────────────────────────────────────
-export const USER_AGREEMENT_TEXT = `ПОЛЬЗОВАТЕЛЬСКОЕ СОГЛАШЕНИЕ
-Мини-приложение «Шоколадница» (VK Mini App)
-Версия 2.0 | Дата: 5 мая 2026 г.
-Составлено по ГК РФ и Закону РФ № 2300-1 «О защите прав потребителей»
-
-────────────────────────────────────────────────────────────────────────
-
-1. СТОРОНЫ И ПРЕДМЕТ
-
-1.1. Оферент (Кафе): кафе «Шоколадница», ул. Спасская, 18,
-     vk.com/shokokirov
-
-1.2. Пользователь: физическое лицо, открывшее приложение в VK
-     и оформляющее бронирование столика.
-
-1.3. Предмет: Кафе предоставляет возможность предварительно
-     забронировать столик через приложение. Бронирование —
-     предварительная заявка, не гарантирует конкретный столик,
-     только наличие свободного места на указанное кол-во гостей.
-
-1.4. Приложение бесплатно. Дополнительных платежей нет.
-
-────────────────────────────────────────────────────────────────────────
-
-2. УСЛОВИЯ ИСПОЛЬЗОВАНИЯ
-
-2.1. Требования:
-     — Активный аккаунт ВКонтакте
-     — Возраст от 14 лет
-     — Доступ в интернет
-
-2.2. Пользователь обязан:
-     — Указывать достоверные имя и номер телефона
-     — Не создавать фиктивные бронирования
-     — Приходить в указанное время или отменять бронь
-       не позднее чем за 1 час до визита
-
-2.3. Запрещено:
-     — Использовать приложение в рекламных или мошеннических целях
-     — Применять автоматизированные средства для запросов
-     — Нарушать работу приложения
-
-────────────────────────────────────────────────────────────────────────
-
-3. ПОРЯДОК БРОНИРОВАНИЯ
-
-3.1. Заполните форму: имя, телефон, дата, время, кол-во гостей.
-     Комментарий — по желанию.
-
-3.2. Ограничения:
-     — Время бронирования: 08:00–20:00, шаг 30 минут
-     — 1 бронирование на 1 телефон на 1 дату
-     — Максимум 20 гостей
-
-3.3. Бронирование действительно 15 минут от указанного времени.
-     При неявке столик может быть передан другим гостям.
-
-3.4. Кафе вправе отменить бронирование при:
-     — Форс-мажоре (санработы, закрытые мероприятия)
-     — Предоставлении недостоверных данных
-     — Нарушении настоящего Соглашения
-
-3.5. Отмена/изменение брони: vk.com/shokokirov
-     или тел. кафе — не позднее чем за 1 час до визита.
-
-────────────────────────────────────────────────────────────────────────
-
-4. ОТВЕТСТВЕННОСТЬ
-
-4.1. Кафе не отвечает за:
-     — Сбои платформы ВКонтакте
-     — Технические проблемы на стороне провайдера
-     — Убытки из-за недостоверных данных пользователя
-
-4.2. Кафе отвечает за необоснованный отказ в обслуживании
-     при действующем бронировании — в рамках Закона о защите
-     прав потребителей.
-
-4.3. Приложение предоставляется «как есть» (as is).
-     Непрерывная работа 24/7 не гарантируется.
-
-────────────────────────────────────────────────────────────────────────
-
-5. УВЕДОМЛЕНИЯ
-
-Уведомления через VK отправляются только при двойном согласии.
-Виды: подтверждение брони, напоминание за 1 час, запрос отзыва.
-Отказ: заблокируйте сообщения сообщества в настройках VK.
-
-────────────────────────────────────────────────────────────────────────
-
-6. ИЗМЕНЕНИЕ СОГЛАШЕНИЯ
-
-Кафе вправе изменять условия. Актуальная версия — в приложении.
-Продолжение использования = согласие с изменениями.
-
-────────────────────────────────────────────────────────────────────────
-
-7. ПРИМЕНИМОЕ ПРАВО
-
-Законодательство Российской Федерации.
-Споры — путём переговоров, затем в суде по месту нахождения Кафе.
-
-────────────────────────────────────────────────────────────────────────
-
-© Кафе «Шоколадница», 2026. ул. Спасская, 18 | vk.com/shokokirov`;
-
-// ─────────────────────────────────────────────────────────────────────────────
-// СОГЛАСИЕ НА ОБРАБОТКУ ПЕРСОНАЛЬНЫХ ДАННЫХ
-// ─────────────────────────────────────────────────────────────────────────────
-export const PERSONAL_DATA_CONSENT_TEXT = `СОГЛАСИЕ НА ОБРАБОТКУ ПЕРСОНАЛЬНЫХ ДАННЫХ
-Мини-приложение «Шоколадница» (VK Mini App)
-В соответствии со ст. 9 ФЗ от 27.07.2006 № 152-ФЗ
-
-────────────────────────────────────────────────────────────────────────
-
-Устанавливая галочку «Даю согласие на обработку персональных
-данных», я выражаю согласие кафе «Шоколадница» (ул. Спасская, 18)
-на обработку следующих персональных данных:
-
-ДАННЫЕ:
-  — Имя и фамилия
-  — Номер мобильного телефона
-  — Дата и время визита
-  — Количество гостей
-  — Комментарий к бронированию (при наличии)
-  — VK user ID (только при согласии на уведомления)
-  — IP-адрес (до 120 секунд, для защиты от злоупотреблений)
-
-ЦЕЛИ ОБРАБОТКИ:
-  — Оформление и учёт бронирования столика
-  — Уведомление персонала кафе о предстоящем визите
-  — Отправка уведомлений через ВКонтакте (при согласии)
-  — Обеспечение безопасности информационной системы
-
-ПОЛУЧАТЕЛИ ДАННЫХ:
-  — Персонал кафе «Шоколадница»
-  — Платформа ВКонтакте — для доставки уведомлений
-
-СРОК ХРАНЕНИЯ:
-  — Данные бронирования: до требования об удалении
-  — IP-адрес: не более 120 секунд
-
-────────────────────────────────────────────────────────────────────────
-
-МОИ ПРАВА (ФЗ-152):
-
-  — Получить информацию об обработке данных (ст. 14)
-  — Требовать уточнения, блокирования или удаления данных (ст. 14)
-  — Отозвать согласие в любой момент (ст. 9)
-  — Обратиться в Роскомнадзор: rkn.gov.ru
-
-Для отзыва согласия: vk.com/shokokirov | ул. Спасская, 18
-Срок рассмотрения: 30 рабочих дней.
-
-────────────────────────────────────────────────────────────────────────
-
-Отзыв согласия не влечёт автоматического удаления данных, однако
-Оператор обязан удалить их по соответствующему запросу в течение
-30 рабочих дней.
-
-Предоставление данных об имени и телефоне является обязательным
-условием для оформления бронирования. VK user ID — добровольно.
-
-────────────────────────────────────────────────────────────────────────
-
-© Кафе «Шоколадница», 2026. vk.com/shokokirov`;
-
-// Оставляем для обратной совместимости (если где-то ещё используется)
-export const TERMS_OF_USE_TEXT = USER_AGREEMENT_TEXT;
+import { useState, useMemo } from 'react';
+import bridge from '@vkontakte/vk-bridge';
+import {
+    Checkbox,
+    FormItem,
+    Input,
+    Button,
+    Textarea,
+    Select,
+    FormLayoutGroup,
+    DateInput,
+    Link,
+    ModalCard,
+    ModalRoot,
+} from '@vkontakte/vkui';
+import {
+    validateName,
+    validateGuests,
+    validatePhone,
+    validateDate,
+    validateTime,
+} from '../utils/validators';
+import {
+    PRIVACY_POLICY_TEXT,
+    USER_AGREEMENT_TEXT,
+    PERSONAL_DATA_CONSENT_TEXT,
+} from '../utils/legalTexts';
+
+// Генерация слотов времени: 08:00, 08:30, ..., 20:00
+const ALL_TIME_SLOTS = (() => {
+    const slots = [];
+    for (let h = 8; h <= 20; h++) {
+        for (let m = 0; m < 60; m += 30) {
+            slots.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+        }
+    }
+    return slots;
+})();
+
+/** Минимальная дата — сегодня (в формате YYYY-MM-DD) */
+const getTodayStr = () => new Date().toISOString().split('T')[0];
+
+/** Проверяет, является ли строка датой сегодняшнего дня */
+const isToday = (dateStr) => {
+    if (!dateStr) return false;
+    return dateStr === getTodayStr();
+};
+
+/** Конвертирует строку YYYY-MM-DD в объект Date (полночь локального времени) */
+const dateStrToDate = (str) => {
+    if (!str) return undefined;
+    const [y, m, d] = str.split('-').map(Number);
+    return new Date(y, m - 1, d);
+};
+
+/** Конвертирует объект Date в строку YYYY-MM-DD */
+const dateToStr = (date) => {
+    if (!date) return '';
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+};
+
+/** Форматирует цифры телефона в читаемый вид: +7 (XXX) XXX-XX-XX */
+const formatPhone = (digits) => {
+    if (digits.length === 0) return '+7';
+    if (digits.length < 3) return `+7 (${digits}`;
+    if (digits.length === 3) return `+7 (${digits})`;
+    if (digits.length <= 6) return `+7 (${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    if (digits.length <= 8) return `+7 (${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+    return `+7 (${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 8)}-${digits.slice(8, 10)}`;
+};
+
+const INITIAL_FORM = {
+    name: '',
+    guests: 1,
+    phone: '',
+    date: '',
+    time: '',
+    comment: '',
+};
+
+const INITIAL_AGREEMENTS = {
+    // Согласие с условиями использования и политикой конфиденциальности
+    termsAndPrivacy: false,
+    // Согласие на обработку персональных данных
+    personalData: false,
+    // Согласие на уведомления через VK (опционально — не блокирует кнопку)
+    notifications: false,
+};
+
+function BookingForm({ onRequestConfirm, isSubmitting }) {
+    const [form, setForm] = useState(INITIAL_FORM);
+    const [errors, setErrors] = useState({});
+    const [agreements, setAgreements] = useState(INITIAL_AGREEMENTS);
+
+    // Модальное окно с юридическим текстом
+    const [legalModal, setLegalModal] = useState(null); // null | 'privacy' | 'terms' | 'consent'
+
+    // Рандомный плейсхолдер для комментария
+    const [commentPlaceholder] = useState(() => {
+        const variants = ['У окна', 'В уголочке', 'На диване', 'Не возле входа', 'У розетки'];
+        return variants[Math.floor(Math.random() * variants.length)];
+    });
+
+    // Кнопка активна только если заполнены обязательные поля И приняты оба обязательных соглашения
+    const canSubmit = useMemo(() => {
+        const phoneDigits = form.phone.replace(/\D/g, '');
+        return (
+            form.name.trim().length > 0 &&
+            phoneDigits.length >= 10 &&
+            form.date.length > 0 &&
+            form.time.length > 0 &&
+            agreements.termsAndPrivacy &&
+            agreements.personalData
+        );
+    }, [form.name, form.phone, form.date, form.time, agreements.termsAndPrivacy, agreements.personalData]);
+
+    // Фильтрация слотов времени: если дата — сегодня, убираем прошедшие
+    const availableTimeSlots = useMemo(() => {
+        if (!isToday(form.date)) return ALL_TIME_SLOTS;
+        const now = new Date();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+        return ALL_TIME_SLOTS.filter(slot => {
+            const [h, m] = slot.split(':').map(Number);
+            return h * 60 + m > currentMinutes;
+        });
+    }, [form.date]);
+
+    /** Валидация всех полей формы */
+    const validateFormData = () => {
+        const newErrors = {
+            name: validateName(form.name),
+            guests: validateGuests(form.guests),
+            phone: validatePhone(form.phone),
+            date: validateDate(form.date),
+            time: validateTime(form.time),
+        };
+        Object.keys(newErrors).forEach(key => newErrors[key] === null && delete newErrors[key]);
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleDateChange = (date) => {
+        const str = dateToStr(date);
+        setForm({ ...form, date: str });
+        if (errors.date) setErrors({ ...errors, date: null });
+    };
+
+    const handleChange = (field) => (e) => {
+        setForm({ ...form, [field]: e.target.value });
+        if (errors[field]) setErrors({ ...errors, [field]: null });
+    };
+
+    const handlePhoneChange = (e) => {
+        const allDigits = e.target.value.replace(/\D/g, '');
+        let cleaned = allDigits;
+        if (cleaned.startsWith('7') || cleaned.startsWith('8')) cleaned = cleaned.slice(1);
+        cleaned = cleaned.slice(0, 10);
+        const formatted = cleaned.length > 0 ? formatPhone(cleaned) : '';
+        setForm({ ...form, phone: formatted });
+        if (errors.phone) setErrors({ ...errors, phone: null });
+    };
+
+    // Обработчик чекбокса уведомлений — запрашивает разрешение через VK Bridge
+    const handleNotificationsChange = async (e) => {
+        if (e.target.checked) {
+            try {
+                await bridge.send('VKWebAppAllowMessagesFromGroup', {
+                    group_id: Number(import.meta.env.VITE_VK_GROUP_ID),
+                });
+                setAgreements({ ...agreements, notifications: true });
+            } catch {
+                setAgreements({ ...agreements, notifications: false });
+            }
+        } else {
+            setAgreements({ ...agreements, notifications: false });
+        }
+    };
+
+    const handleSubmit = () => {
+        if (isSubmitting) return;
+        if (!validateFormData()) return;
+
+        const cleanPhone = form.phone.replace(/\D/g, '');
+
+        onRequestConfirm({
+            payload: {
+                name: form.name,
+                guests: form.guests,
+                phone: cleanPhone,
+                date: form.date,
+                time: form.time,
+                comment: form.comment || null,
+                vk_user_id: window.vkUser?.id ?? null,
+                vk_notifications: agreements.notifications,
+            },
+            displayData: {
+                name: form.name,
+                guests: form.guests,
+                phone: form.phone,
+                date: form.date,
+                time: form.time,
+                comment: form.comment || null,
+            },
+        });
+    };
+
+    // Получаем текст для модального окна
+    const getLegalContent = () => {
+        if (legalModal === 'privacy') return { title: '🔒 Политика конфиденциальности', text: PRIVACY_POLICY_TEXT };
+        if (legalModal === 'terms') return { title: '📄 Пользовательское соглашение', text: USER_AGREEMENT_TEXT };
+        if (legalModal === 'consent') return { title: '✅ Согласие на обработку ПД', text: PERSONAL_DATA_CONSENT_TEXT };
+        return null;
+    };
+
+    const legalContent = getLegalContent();
+
+    return (
+        <>
+            {/* Модальное окно с юридическим документом */}
+            {legalContent && (
+                <ModalRoot activeModal="legal" onClose={() => setLegalModal(null)}>
+                    <ModalCard
+                        id="legal"
+                        onClose={() => setLegalModal(null)}
+                        title={legalContent.title}
+                        actions={
+                            <Button size="l" mode="primary" stretched onClick={() => setLegalModal(null)}>
+                                Понятно
+                            </Button>
+                        }
+                    >
+                        <div style={{
+                            whiteSpace: 'pre-wrap',
+                            fontSize: 13,
+                            lineHeight: 1.6,
+                            color: 'var(--vkui--color_text_primary)',
+                            maxHeight: '60vh',
+                            overflowY: 'auto',
+                            padding: '4px 0',
+                        }}>
+                            {legalContent.text}
+                        </div>
+                    </ModalCard>
+                </ModalRoot>
+            )}
+
+            {/* ── Поля формы ── */}
+            <FormLayoutGroup mode="horizontal">
+                <FormItem
+                    top="👤 Имя"
+                    status={errors.name ? 'error' : 'default'}
+                    bottom={errors.name}
+                >
+                    <Input
+                        value={form.name}
+                        onChange={handleChange('name')}
+                        maxLength={100}
+                    />
+                </FormItem>
+
+                <FormItem
+                    top="👥 Гостей"
+                    status={errors.guests ? 'error' : 'default'}
+                    bottom={errors.guests}
+                >
+                    <Select
+                        value={form.guests}
+                        onChange={handleChange('guests')}
+                        options={Array.from({ length: 20 }, (_, i) => ({
+                            label: String(i + 1),
+                            value: i + 1,
+                        }))}
+                    />
+                </FormItem>
+            </FormLayoutGroup>
+
+            <FormItem
+                top="📱 Телефон"
+                status={errors.phone ? 'error' : 'default'}
+                bottom={errors.phone}
+            >
+                <Input
+                    type="tel"
+                    value={form.phone}
+                    onChange={handlePhoneChange}
+                    placeholder="+7 (___) ___-__-__"
+                />
+            </FormItem>
+
+            <FormLayoutGroup mode="horizontal">
+                <FormItem
+                    top="📅 Дата"
+                    status={errors.date ? 'error' : 'default'}
+                    bottom={errors.date}
+                >
+                    <DateInput
+                        value={dateStrToDate(form.date)}
+                        onChange={handleDateChange}
+                        disablePast
+                        minDateTime={new Date()}
+                        closeOnChange
+                    />
+                </FormItem>
+
+                <FormItem
+                    top="⏰ Время"
+                    status={errors.time ? 'error' : 'default'}
+                    bottom={errors.time}
+                >
+                    <Select
+                        value={form.time}
+                        onChange={handleChange('time')}
+                        placeholder="Выберите время"
+                        options={availableTimeSlots.map(t => ({ label: t, value: t }))}
+                    />
+                </FormItem>
+            </FormLayoutGroup>
+
+            <FormItem
+                top="💬 Комментарий"
+                bottom={
+                    <span style={{
+                        float: 'right',
+                        color: form.comment.length > 450
+                            ? 'var(--vkui--color_text_negative)'
+                            : 'var(--vkui--color_text_secondary)',
+                        fontSize: 13,
+                    }}>
+                        {form.comment.length}/500
+                    </span>
+                }
+            >
+                <Textarea
+                    value={form.comment}
+                    onChange={handleChange('comment')}
+                    placeholder={commentPlaceholder}
+                    rows={3}
+                    maxLength={500}
+                />
+            </FormItem>
+
+            {/* ── Раздел согласий ── */}
+
+            {/* 1. Условия использования + политика конфиденциальности */}
+            <FormItem>
+                <Checkbox
+                    checked={agreements.termsAndPrivacy}
+                    onChange={(e) => setAgreements({ ...agreements, termsAndPrivacy: e.target.checked })}
+                >
+                    <span style={{ fontSize: 13, lineHeight: 1.5 }}>
+                        Я принимаю{' '}
+                        <Link
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLegalModal('terms'); }}
+                            style={{ color: 'var(--vkui--color_text_link)' }}
+                        >
+                            пользовательское соглашение
+                        </Link>
+                        {' '}и{' '}
+                        <Link
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLegalModal('privacy'); }}
+                            style={{ color: 'var(--vkui--color_text_link)' }}
+                        >
+                            политику конфиденциальности
+                        </Link>
+                        {' '}кафе «Шоколадница» *
+                    </span>
+                </Checkbox>
+            </FormItem>
+
+            {/* 2. Согласие на обработку персональных данных */}
+            <FormItem>
+                <Checkbox
+                    checked={agreements.personalData}
+                    onChange={(e) => setAgreements({ ...agreements, personalData: e.target.checked })}
+                >
+                    <span style={{ fontSize: 13, lineHeight: 1.5 }}>
+                        Я даю{' '}
+                        <Link
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLegalModal('consent'); }}
+                            style={{ color: 'var(--vkui--color_text_link)' }}
+                        >
+                            согласие на обработку персональных данных
+                        </Link>
+                        {' '}(имя, телефон) *
+                    </span>
+                </Checkbox>
+            </FormItem>
+
+            {/* 3. Уведомления через VK — опционально */}
+            <FormItem>
+                <Checkbox
+                    checked={agreements.notifications}
+                    onChange={handleNotificationsChange}
+                >
+                    <span style={{ fontSize: 13, lineHeight: 1.5 }}>
+                        🔔 Получать уведомления о бронировании через VK
+                    </span>
+                </Checkbox>
+            </FormItem>
+
+            {/* Подсказка об обязательных полях */}
+            <FormItem>
+                <div style={{ fontSize: 11, color: 'var(--vkui--color_text_tertiary)', paddingLeft: 4 }}>
+                    * — обязательно для оформления бронирования
+                </div>
+            </FormItem>
+
+            {/* ── Кнопка бронирования ── */}
+            <FormItem>
+                <Button
+                    size="l"
+                    stretched
+                    onClick={handleSubmit}
+                    disabled={!canSubmit || isSubmitting}
+                    loading={isSubmitting}
+                >
+                    ☕ Забронировать
+                </Button>
+            </FormItem>
+        </>
+    );
+}
+
+export default BookingForm;
