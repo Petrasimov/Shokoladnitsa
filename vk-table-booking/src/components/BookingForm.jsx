@@ -365,7 +365,7 @@ function BookingForm({ onRequestConfirm, isSubmitting }) {
                         >
                             политику конфиденциальности
                         </Link>
-                        {' '}кафе «Шоколадница» *
+                        {' '}кафе «Шоколадница»
                     </span>
                 </Checkbox>
             </FormItem>
@@ -384,7 +384,7 @@ function BookingForm({ onRequestConfirm, isSubmitting }) {
                         >
                             согласие на обработку персональных данных
                         </Link>
-                        {' '}(имя, телефон) *
+                        {' '}(имя, телефон)
                     </span>
                 </Checkbox>
             </FormItem>
@@ -399,13 +399,6 @@ function BookingForm({ onRequestConfirm, isSubmitting }) {
                         🔔 Получать уведомления о бронировании через VK
                     </span>
                 </Checkbox>
-            </FormItem>
-
-            {/* Подсказка об обязательных полях */}
-            <FormItem>
-                <div style={{ fontSize: 11, color: 'var(--vkui--color_text_tertiary)', paddingLeft: 4 }}>
-                    * — обязательно для оформления бронирования
-                </div>
             </FormItem>
 
             {/* ── Кнопка бронирования ── */}
